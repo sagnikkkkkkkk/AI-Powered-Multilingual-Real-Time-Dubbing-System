@@ -2,16 +2,21 @@
 venv/
 backend/venv/
 
-# Python
+# Python cache
 __pycache__/
+**/__pycache__/
 *.pyc
 
-# Environment files
-.env
-
-# Generated folders
+# Generated files
 backend/uploads/
 backend/outputs/
 
+# Environment variables
+.env
+
 # VS Code
 .vscode/
+
+# Operating System files
+.DS_Store
+Thumbs.db
