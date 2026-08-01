@@ -1,0 +1,17 @@
+# Virtual environments
+venv/
+backend/venv/
+
+# Python
+__pycache__/
+*.pyc
+
+# Environment files
+.env
+
+# Generated folders
+backend/uploads/
+backend/outputs/
+
+# VS Code
+.vscode/

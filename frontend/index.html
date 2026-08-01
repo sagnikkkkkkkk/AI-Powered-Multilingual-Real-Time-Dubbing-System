@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nativox — AI Native-Language Dubbing</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0B0D10">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0D10;
+    --surface:#14171C;
+    --surface-2:#1C2029;
+    --border:#262B33;
+    --gold:#E8A33D;
+    --gold-dim:#3A2E18;
+    --blue:#3E8FC4;
+    --blue-dim:#152530;
+    --text:#EDEDE6;
+    --text-muted:#8B909B;
+    --text-faint:#565C68;
+    --error:#D96257;
+    --success:#4FAE7A;
+    --radius:10px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+  }
+  ::selection{background:var(--gold-dim); color:var(--gold);}
+
+  header{
+    padding:28px 40px;
+    border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .brand{display:flex; align-items:baseline; gap:12px;}
+  .brand h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:22px; font-weight:700; letter-spacing:-0.01em;
+  }
+  .brand h1 span{color:var(--gold);}
+  .brand .tag{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px; color:var(--text-faint); letter-spacing:0.04em;
+    border:1px solid var(--border); padding:3px 8px; border-radius:6px;
+  }
+  .subtitle{font-size:13px; color:var(--text-muted);}
+
+  main{
+    max-width:1180px; margin:0 auto; padding:36px 40px 80px;
+    display:grid; grid-template-columns:340px 1fr; gap:28px;
+  }
+  @media (max-width:900px){ main{grid-template-columns:1fr;} }
+
+  .panel{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:22px;
+  }
+  .panel + .panel{margin-top:20px;}
+  .panel h2{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:14px; font-weight:500; letter-spacing:0.02em;
+    color:var(--text-muted); text-transform:uppercase;
+    margin-bottom:16px;
+  }
+
+  .dropzone{
+    border:1.5px dashed var(--border);
+    border-radius:var(--radius);
+    padding:28px 16px;
+    text-align:center;
+    cursor:pointer;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .dropzone:hover, .dropzone.drag{border-color:var(--gold); background:var(--gold-dim);}
+  .dropzone p{font-size:13px; color:var(--text-muted); margin-top:6px;}
+  .dropzone .fname{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--gold); margin-top:10px; word-break:break-all;}
+  input[type=file]{display:none;}
+
+  label.field-label{
+    display:block; font-size:12px; color:var(--text-muted); margin:18px 0 8px;
+  }
+  select{
+    width:100%; background:var(--surface-2); color:var(--text);
+    border:1px solid var(--border); border-radius:8px;
+    padding:10px 12px; font-size:14px; font-family:'Inter',sans-serif;
+  }
+
+  button.primary{
+    width:100%; margin-top:20px;
+    background:var(--gold); color:#1A1204;
+    border:none; border-radius:8px;
+    padding:13px; font-size:14px; font-weight:600;
+    font-family:'Inter',sans-serif;
+    cursor:pointer; transition:opacity .15s ease;
+  }
+  button.primary:disabled{opacity:0.35; cursor:not-allowed;}
+  button.primary:not(:disabled):hover{opacity:0.9;}
+
+  /* Signal chain */
+  .chain{display:flex; align-items:center; gap:0; margin-bottom:8px;}
+  .node{
+    flex:1; text-align:center; padding:14px 6px;
+    border:1px solid var(--border); border-radius:8px;
+    background:var(--surface-2);
+    position:relative;
+  }
+  .node .dot{
+    width:8px; height:8px; border-radius:50%;
+    background:var(--text-faint); margin:0 auto 8px;
+    transition:background .2s ease, box-shadow .2s ease;
+  }
+  .node.running .dot{background:var(--blue); box-shadow:0 0 0 4px var(--blue-dim); animation:pulse 1.2s infinite;}
+  .node.done .dot{background:var(--success); box-shadow:none; animation:none;}
+  .node.error .dot{background:var(--error);}
+  @keyframes pulse{0%,100%{opacity:1;} 50%{opacity:0.4;}}
+  .node .label{font-size:11px; color:var(--text-muted); font-family:'IBM Plex Mono',monospace;}
+  .node.done .label{color:var(--success);}
+  .node.running .label{color:var(--blue);}
+  .connector{width:18px; height:1px; background:var(--border); flex-shrink:0;}
+
+  .status-line{
+    font-family:'IBM Plex Mono',monospace; font-size:12px;
+    color:var(--text-muted); margin-top:14px; min-height:16px;
+  }
+
+  .empty-state{
+    color:var(--text-faint); font-size:13px; text-align:center; padding:40px 20px;
+  }
+
+  .text-block{
+    font-size:13px; line-height:1.7; color:var(--text-muted);
+    background:var(--surface-2); border-radius:8px; padding:14px;
+    max-height:140px; overflow-y:auto;
+  }
+  .text-block + .text-block{margin-top:12px;}
+  .text-block .tag-mini{
+    font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--gold);
+    text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:6px;
+  }
+
+  video{width:100%; border-radius:8px; background:#000; display:block;}
+  .video-row{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px;}
+  @media (max-width:700px){ .video-row{grid-template-columns:1fr;} }
+  .video-col p.cap{font-size:11px; color:var(--text-faint); margin-top:6px; font-family:'IBM Plex Mono',monospace;}
+
+  a.download-btn{
+    display:inline-block; margin-top:16px; text-decoration:none;
+    background:var(--surface-2); color:var(--gold); border:1px solid var(--gold);
+    padding:10px 16px; border-radius:8px; font-size:13px; font-weight:500;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1>native<span>ox</span></h1>
+    <span class="tag">AI DUBBING · SAME VOICE, NEW LANGUAGE</span>
+  </div>
+  <div class="subtitle">Major Project — B.Tech CSE</div>
+</header>
+
+<main>
+  <!-- LEFT: controls -->
+  <div>
+    <div class="panel">
+      <h2>Source clip</h2>
+      <div class="dropzone" id="dropzone">
+        <p>Drop a video file, or click to browse</p>
+        <p style="font-size:11px;">MP4, MOV — a short clip works best for demos</p>
+        <div class="fname" id="fname"></div>
+      </div>
+      <input type="file" id="fileInput" accept="video/*">
+
+      <label class="field-label">Target language</label>
+      <select id="langSelect"><option>Loading languages…</option></select>
+
+      <label class="field-label">Dubbing voice</label>
+      <select id="genderSelect">
+        <option value="auto">Auto-detect from source voice</option>
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+      </select>
+
+      <button class="primary" id="startBtn" disabled>Start dubbing</button>
+    </div>
+  </div>
+
+  <!-- RIGHT: pipeline + results -->
+  <div>
+    <div class="panel">
+      <h2>Pipeline</h2>
+      <div class="chain" id="chain"></div>
+      <div class="status-line" id="statusLine">Waiting for a clip…</div>
+    </div>
+
+    <div class="panel">
+      <h2>Transcript &amp; translation</h2>
+      <div id="textArea">
+        <div class="empty-state">Nothing transcribed yet</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Result</h2>
+      <div class="video-row">
+        <div class="video-col">
+          <video id="srcVideo" controls></video>
+          <p class="cap">SOURCE — original actor audio</p>
+        </div>
+        <div class="video-col">
+          <video id="outVideo" controls></video>
+          <p class="cap">DUBBED — actor's voice, new language</p>
+        </div>
+      </div>
+      <a class="download-btn" id="downloadBtn" style="display:none;">Download dubbed video</a>
+    </div>
+  </div>
+</main>
+
+<script>
+const API = "/api"; // relative — works whether the frontend is served by the
+                     // FastAPI backend itself, or opened separately (in which
+                     // case change this to "http://127.0.0.1:8000/api")
+
+const STAGES = [
+  ["separate", "SEPARATE"],
+  ["asr", "ASR"],
+  ["translate", "TRANSLATE"],
+  ["voice_clone", "VOICE"],
+  ["prosody", "PROSODY"],
+  ["mux", "MUX"],
+  ["lipsync", "LIP-SYNC"],
+];
+
+const chain = document.getElementById("chain");
+STAGES.forEach(([name, label], i) => {
+  const node = document.createElement("div");
+  node.className = "node";
+  node.id = "node-" + name;
+  node.innerHTML = `<div class="dot"></div><div class="label">${label}</div>`;
+  chain.appendChild(node);
+  if (i < STAGES.length - 1) {
+    const c = document.createElement("div");
+    c.className = "connector";
+    chain.appendChild(c);
+  }
+});
+
+let currentJobId = null;
+let selectedFile = null;
+let pollTimer = null;
+
+// --- language list ---
+fetch(`${API}/languages`)
+  .then(r => r.json())
+  .then(langs => {
+    const sel = document.getElementById("langSelect");
+    sel.innerHTML = "";
+    Object.entries(langs).forEach(([code, name]) => {
+      const opt = document.createElement("option");
+      opt.value = code; opt.textContent = name;
+      sel.appendChild(opt);
+    });
+  })
+  .catch(() => {
+    document.getElementById("statusLine").textContent =
+      "Can't reach the backend — make sure uvicorn is running on :8000";
+  });
+
+// --- file selection ---
+const dropzone = document.getElementById("dropzone");
+const fileInput = document.getElementById("fileInput");
+dropzone.addEventListener("click", () => fileInput.click());
+["dragenter","dragover"].forEach(ev =>
+  dropzone.addEventListener(ev, e => { e.preventDefault(); dropzone.classList.add("drag"); }));
+["dragleave","drop"].forEach(ev =>
+  dropzone.addEventListener(ev, e => { e.preventDefault(); dropzone.classList.remove("drag"); }));
+dropzone.addEventListener("drop", e => handleFile(e.dataTransfer.files[0]));
+fileInput.addEventListener("change", e => handleFile(e.target.files[0]));
+
+function handleFile(file) {
+  if (!file) return;
+  selectedFile = file;
+  document.getElementById("fname").textContent = file.name;
+  document.getElementById("startBtn").disabled = false;
+  document.getElementById("srcVideo").src = URL.createObjectURL(file);
+}
+
+// --- start pipeline ---
+document.getElementById("startBtn").addEventListener("click", async () => {
+  if (!selectedFile) return;
+  const btn = document.getElementById("startBtn");
+  btn.disabled = true;
+  btn.textContent = "Uploading…";
+
+  const form = new FormData();
+  form.append("file", selectedFile);
+  const uploadRes = await fetch(`${API}/upload`, { method: "POST", body: form });
+  const { job_id } = await uploadRes.json();
+  currentJobId = job_id;
+
+  const lang = document.getElementById("langSelect").value;
+  const gender = document.getElementById("genderSelect").value;
+  await fetch(`${API}/dub`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ job_id, target_language: lang, preserve_emotion: true, voice_gender: gender }),
+  });
+
+  btn.textContent = "Processing…";
+  document.getElementById("statusLine").textContent = "Job started — polling for progress…";
+  pollTimer = setInterval(pollStatus, 1500);
+});
+
+async function pollStatus() {
+  if (!currentJobId) return;
+  const res = await fetch(`${API}/status/${currentJobId}`);
+  if (!res.ok) return;
+  const job = await res.json();
+
+  job.stages.forEach(s => {
+    const node = document.getElementById("node-" + s.name);
+    if (!node) return;
+    node.className = "node " + s.status;
+  });
+
+  if (job.transcript || job.translation) {
+    const genderNote = job.detected_gender
+      ? `Detected source voice: <b>${job.detected_gender}</b> (${job.gender_confidence} confidence)`
+        + (job.used_voice_gender ? ` — dubbing with <b>${job.used_voice_gender}</b> voice` : "")
+      : "";
+    const bgNote = job.background_preserved === true
+      ? "Background music: preserved"
+      : job.background_preserved === false
+        ? "Background music: not preserved (full audio replaced — install `demucs` to enable)"
+        : "";
+    document.getElementById("textArea").innerHTML = `
+      ${(genderNote || bgNote) ? `<div class="text-block"><span class="tag-mini">Voice &amp; audio</span>${genderNote}${genderNote && bgNote ? "<br>" : ""}${bgNote}</div>` : ""}
+      ${job.transcript ? `<div class="text-block"><span class="tag-mini">Original</span>${job.transcript}</div>` : ""}
+      ${job.translation ? `<div class="text-block"><span class="tag-mini">Translated</span>${job.translation}</div>` : ""}
+    `;
+  }
+
+  const statusLine = document.getElementById("statusLine");
+  if (job.overall_status === "processing") {
+    const running = job.stages.find(s => s.status === "running");
+    statusLine.textContent = running ? `Running: ${running.label}…` : "Processing…";
+  } else if (job.overall_status === "completed") {
+    statusLine.textContent = "Done — dubbed video ready below.";
+    clearInterval(pollTimer);
+    const outVideo = document.getElementById("outVideo");
+    outVideo.src = `${API}/download/${currentJobId}`;
+    const dl = document.getElementById("downloadBtn");
+    dl.style.display = "inline-block";
+    dl.href = `${API}/download/${currentJobId}`;
+    dl.download = "dubbed_output.mp4";
+    document.getElementById("startBtn").textContent = "Start dubbing";
+    document.getElementById("startBtn").disabled = false;
+  } else if (job.overall_status === "failed") {
+    statusLine.textContent = "Failed: " + (job.error || "unknown error");
+    clearInterval(pollTimer);
+    document.getElementById("startBtn").textContent = "Start dubbing";
+    document.getElementById("startBtn").disabled = false;
+  }
+}
+</script>
+</body>
+</html>

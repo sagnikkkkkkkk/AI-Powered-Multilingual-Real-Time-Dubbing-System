@@ -1,0 +1,42 @@
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+python-multipart==0.0.9
+pydantic==2.9.2
+
+# --- Stage 1: Speech recognition ---
+faster-whisper==1.0.3
+
+# --- Stage 2: Translation ---
+deep-translator==1.11.4
+
+# --- Stage 3: Voice cloning / TTS ---
+# Primary engine: Microsoft Edge neural TTS — free, no API key, and unlike
+# gTTS it has genuinely separate male/female voices per language.
+edge-tts==6.1.19
+# Fallback engine if edge-tts can't reach its endpoint (offline/firewalled):
+gTTS==2.5.3
+# Real voice-cloning engine (heavy, optional — see README "Upgrading to real voice cloning")
+# TTS==0.22.0
+
+# --- Gender detection (pitch analysis of the source voice) ---
+librosa==0.10.2
+soundfile==0.12.1
+
+# --- Stage 5: Video/audio muxing ---
+moviepy==1.0.3
+ffmpeg-python==0.2.0
+pydub==0.25.1
+# pydub and moviepy both shell out to the ffmpeg binary — install it separately:
+#   Ubuntu/Debian: sudo apt install ffmpeg
+#   Mac:           brew install ffmpeg
+#   Windows:       https://ffmpeg.org/download.html
+
+# --- Background music preservation (optional but on by default) ---
+# Separates vocals from music/ambience so only the speech gets replaced.
+# Heavy (~2GB incl. torch, downloads a model on first use) and slow on CPU.
+# The app runs fine without it — it just falls back to replacing the full
+# audio track (old behavior) if this isn't installed or separation fails.
+demucs==4.0.1
+
+# --- Stage 6: Lip-sync (optional, see README) ---
+# wav2lip is installed separately from its GitHub repo, not via pip

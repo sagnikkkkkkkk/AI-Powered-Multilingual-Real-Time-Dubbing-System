@@ -1,0 +1,10 @@
+{
+  "name": "Nativox — AI Native-Language Dubbing",
+  "short_name": "Nativox",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0B0D10",
+  "theme_color": "#0B0D10",
+  "description": "AI system that dubs video dialogue into a new language using the original actor's own cloned voice.",
+  "icons": []
+}
