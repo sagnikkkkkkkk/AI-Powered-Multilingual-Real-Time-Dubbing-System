@@ -34,7 +34,7 @@ STAGE_NAMES = [
 ]
 
 
-def run_pipeline(job_id: str, video_path: str, target_language: str, voice_gender: str = "auto") -> None:
+def run_pipeline(job_id: str, video_path: str, target_language: str, voice_gender: str = "auto", preserve_background: bool = True) -> None:
     try:
         jobs.update_job(job_id, overall_status="processing")
         work_dir = OUTPUT_DIR / job_id
@@ -47,7 +47,7 @@ def run_pipeline(job_id: str, video_path: str, target_language: str, voice_gende
         vocals_audio = raw_audio  # default: no separation, work on the full mix
         background_audio = None
 
-        if ENABLE_BACKGROUND_PRESERVATION:
+        if preserve_background and ENABLE_BACKGROUND_PRESERVATION:
             jobs.update_stage(job_id, "separate", "running")
             sep_result = separation.separate_vocals(raw_audio, work_dir)
             if sep_result:
@@ -58,8 +58,11 @@ def run_pipeline(job_id: str, video_path: str, target_language: str, voice_gende
                 jobs.update_job(job_id, background_preserved=False)
                 jobs.update_stage(
                     job_id, "separate", "done",
-                    "separation unavailable — install `demucs` to preserve background music; using full audio replace for now"
+                    "separation failed or unavailable — see terminal log; using full audio replace for now"
                 )
+        elif not preserve_background:
+            jobs.update_job(job_id, background_preserved=False)
+            jobs.update_stage(job_id, "separate", "done", "skipped — you chose to remove background music")
         else:
             jobs.update_job(job_id, background_preserved=False)
             jobs.update_stage(job_id, "separate", "done", "disabled in config")

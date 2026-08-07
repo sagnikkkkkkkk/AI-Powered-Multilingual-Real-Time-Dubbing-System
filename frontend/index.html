@@ -191,6 +191,11 @@
         <option value="female">Female</option>
       </select>
 
+      <label class="field-label" style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+        <input type="checkbox" id="bgMusicCheck" checked style="width:auto; margin:0;">
+        Keep background music
+      </label>
+
       <button class="primary" id="startBtn" disabled>Start dubbing</button>
     </div>
   </div>
@@ -311,10 +316,11 @@ document.getElementById("startBtn").addEventListener("click", async () => {
 
   const lang = document.getElementById("langSelect").value;
   const gender = document.getElementById("genderSelect").value;
+  const keepBg = document.getElementById("bgMusicCheck").checked;
   await fetch(`${API}/dub`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ job_id, target_language: lang, preserve_emotion: true, voice_gender: gender }),
+    body: JSON.stringify({ job_id, target_language: lang, preserve_emotion: true, voice_gender: gender, preserve_background: keepBg }),
   });
 
   btn.textContent = "Processing…";

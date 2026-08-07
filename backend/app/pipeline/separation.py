@@ -61,7 +61,10 @@ def separate_vocals(audio_path: str, work_dir: Path) -> Optional[Tuple[str, str]
             return str(vocals), str(background)
         return None
 
-    except Exception:
+    except Exception as exc:
         # Any failure here (missing model download, OOM, unsupported
-        # input, etc.) should degrade gracefully, not take the job down.
+        # input, etc.) should degrade gracefully, not take the job down —
+        # but print the real reason so it's diagnosable instead of a
+        # silent, unexplained "background music removed" result.
+        print(f"[separation] vocal/background separation failed: {exc!r}")
         return None
