@@ -82,7 +82,10 @@ def start_dubbing(req: DubRequest, background_tasks: BackgroundTasks):
     video_path = str(matches[0])
 
     jobs.update_job(req.job_id, target_language=req.target_language)
-    background_tasks.add_task(run_pipeline, req.job_id, video_path, req.target_language, req.voice_gender)
+    background_tasks.add_task(
+        run_pipeline, req.job_id, video_path, req.target_language,
+        req.voice_gender, req.preserve_background,
+    )
     return {"status": "started", "job_id": req.job_id}
 
 

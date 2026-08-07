@@ -7,7 +7,7 @@ class DubRequest(BaseModel):
     target_language: str  # e.g. "hi", "ta", "fr"
     preserve_emotion: bool = True
     voice_gender: str = "auto"  # "auto" | "male" | "female"
-
+    preserve_background: bool = True  # keep original background music/ambience
 
 class StageStatus(BaseModel):
     name: str
