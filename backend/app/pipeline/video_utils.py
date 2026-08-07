@@ -12,7 +12,7 @@ def get_duration(wav_path: str) -> float:
     return len(audio) / 1000.0
 
 
-def fit_duration(wav_path: str, target_seconds: float, out_path: str, min_speed: float = 0.75, max_speed: float = 1.9) -> str:
+def fit_duration(wav_path: str, target_seconds: float, out_path: str, min_speed: float = 0.95, max_speed: float = 1.05) -> str:
     """
     Time-stretches a synthesized clip to fit inside `target_seconds` using
     ffmpeg's atempo filter, which changes speed WITHOUT changing pitch —

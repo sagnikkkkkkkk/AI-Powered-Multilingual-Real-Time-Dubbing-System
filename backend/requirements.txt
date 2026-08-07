@@ -12,7 +12,7 @@ deep-translator==1.11.4
 # --- Stage 3: Voice cloning / TTS ---
 # Primary engine: Microsoft Edge neural TTS — free, no API key, and unlike
 # gTTS it has genuinely separate male/female voices per language.
-edge-tts==6.1.19
+edge-tts==7.2.3
 # Fallback engine if edge-tts can't reach its endpoint (offline/firewalled):
 gTTS==2.5.3
 # Real voice-cloning engine (heavy, optional — see README "Upgrading to real voice cloning")

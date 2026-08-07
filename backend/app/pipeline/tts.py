@@ -51,8 +51,12 @@ def synthesize_edge(text: str, lang: str, out_path: Path, gender: str = "female"
 
     try:
         asyncio.run(_run())
-    except Exception:
-        # Network issue, rate limit, etc. — fall back so the job doesn't die.
+    except Exception as exc:
+        # Network issue, rate limit, blocked endpoint, etc. Falling back
+        # keeps the job alive, but print the real reason so it's obvious
+        # *why* the requested gender didn't come through, instead of
+        # silently landing on gTTS's one generic voice every time.
+        print(f"[tts] edge-tts failed for voice={voice!r}: {exc!r} — falling back to gTTS")
         return synthesize_baseline(text, lang, out_path)
 
     return out_path
