@@ -30,3 +30,5 @@ class JobStatus(BaseModel):
     gender_confidence: Optional[str] = None
     used_voice_gender: Optional[str] = None
     background_preserved: Optional[bool] = None
+    keywords_source: Optional[str] = None
+    keywords_translated: Optional[str] = None

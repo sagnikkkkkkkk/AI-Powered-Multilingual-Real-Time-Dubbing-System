@@ -26,8 +26,9 @@ def fit_duration(wav_path: str, target_seconds: float, out_path: str, min_speed:
     line is not).
     """
     current = get_duration(wav_path)
+    out_format = str(out_path).rsplit(".", 1)[-1].lower()
     if current <= target_seconds or current <= 0:
-        AudioSegment.from_file(wav_path).export(out_path, format="wav")
+        AudioSegment.from_file(wav_path).export(out_path, format=out_format)
         return out_path
 
     speed = current / target_seconds

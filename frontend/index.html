@@ -238,13 +238,14 @@ const API = "/api"; // relative — works whether the frontend is served by the
                      // case change this to "http://127.0.0.1:8000/api")
 
 const STAGES = [
-  ["separate", "SEPARATE"],
-  ["asr", "ASR"],
-  ["translate", "TRANSLATE"],
-  ["voice_clone", "VOICE"],
-  ["prosody", "PROSODY"],
-  ["mux", "MUX"],
-  ["lipsync", "LIP-SYNC"],
+  ["mp4_to_mp3", "MP4→MP3"],
+  ["audio_to_text", "AUDIO→TEXT"],
+  ["extract_keywords", "KEYWORDS"],
+  ["translate_keywords", "TRANSLATE KW"],
+  ["form_sentence", "SENTENCE"],
+  ["text_to_mp3", "TEXT→MP3"],
+  ["finetune_mp3", "FINE-TUNE"],
+  ["final_video", "FINAL VIDEO"],
 ];
 
 const chain = document.getElementById("chain");
@@ -345,6 +346,10 @@ async function pollStatus() {
       ? `Detected source voice: <b>${job.detected_gender}</b> (${job.gender_confidence} confidence)`
         + (job.used_voice_gender ? ` — dubbing with <b>${job.used_voice_gender}</b> voice` : "")
       : "";
+    const kwNote = job.keywords_source
+      ? `<div class="text-block"><span class="tag-mini">Keywords (source)</span>${job.keywords_source}</div>
+         <div class="text-block"><span class="tag-mini">Keywords (translated)</span>${job.keywords_translated || ""}</div>`
+      : "";
     const bgNote = job.background_preserved === true
       ? "Background music: preserved"
       : job.background_preserved === false
@@ -352,6 +357,7 @@ async function pollStatus() {
         : "";
     document.getElementById("textArea").innerHTML = `
       ${(genderNote || bgNote) ? `<div class="text-block"><span class="tag-mini">Voice &amp; audio</span>${genderNote}${genderNote && bgNote ? "<br>" : ""}${bgNote}</div>` : ""}
+      ${kwNote}
       ${job.transcript ? `<div class="text-block"><span class="tag-mini">Original</span>${job.transcript}</div>` : ""}
       ${job.translation ? `<div class="text-block"><span class="tag-mini">Translated</span>${job.translation}</div>` : ""}
     `;

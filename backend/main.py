@@ -26,13 +26,14 @@ from app import jobs
 from app.pipeline.orchestrator import run_pipeline, STAGE_NAMES
 
 STAGE_LABELS = {
-    "separate": "Separating vocals & music",
-    "asr": "Transcribing speech",
-    "translate": "Translating dialogue",
-    "voice_clone": "Synthesizing dubbed voice",
-    "prosody": "Matching emotion & pacing",
-    "mux": "Rebuilding video",
-    "lipsync": "Lip-sync realignment",
+    "mp4_to_mp3": "Extracting audio (MP4 → MP3)",
+    "audio_to_text": "Speech to text (Audio → Text)",
+    "extract_keywords": "Extracting keywords",
+    "translate_keywords": "Translating keywords",
+    "form_sentence": "Forming translated sentence",
+    "text_to_mp3": "Synthesizing voice (Text → MP3)",
+    "finetune_mp3": "Fine-tuning MP3 (timing & pacing)",
+    "final_video": "Building final dubbed video",
 }
 
 app = FastAPI(title="AI Native-Language Dubbing API")
